@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - My Library</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-page="/Books/Index">Books</a>
+                <div class="navbar-nav">
+                    <a class="nav-link" asp-page="/Index">Home</a>
+                    <a class="nav-link" asp-page="/Books/Index">Books</a>
+                    <a class="nav-link" asp-page="/Publishers/Index">Publishers</a>
+                    <a class="nav-link" asp-page="/Authors/Index">Authors</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">@RenderBody()</main>
+    </div>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
