@@ -21,5 +21,9 @@ namespace Nitui_Andrei_Lab2.Models
 
         public int? AuthorID { get; set; }
         public Authors? Author { get; set; }
+
+
+        public ICollection<BookCategory>? BookCategories { get; set; }
+
     }
 }

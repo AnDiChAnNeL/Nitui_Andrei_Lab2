@@ -28,6 +28,35 @@
                 </select>
                 <span asp-validation-for="Book.PublisherID" class="text-danger"></span>
             </div>
+
+            <div class="form-group">
+                <div class="table">
+                    <table>
+                        <tbody>
+                            @for (int i = 0; i < Model.AssignedCategoryDataList.Count; i += 3)
+                            {
+                                <tr>
+                                    @for (int j = i; j < Math.Min(i + 3, Model.AssignedCategoryDataList.Count); j++)
+                                    {
+                                        var cat = Model.AssignedCategoryDataList[j];
+
+                                        <td>
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="selectedCategories"
+                                                       value="@cat.CategoryID"
+                                                       checked="@cat.Assigned" />
+                                                @cat.CategoryID @cat.Name
+                                            </label>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label asp-for="Book.AuthorID" class="control-label">Author Name</label>
                 <select asp-for="Book.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">

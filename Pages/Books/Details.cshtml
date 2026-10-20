@@ -15,6 +15,20 @@
     <dd class="col-sm-10">@Html.DisplayFor(model => model.Book.PublishingDate)</dd>
     <dt class="col-sm-2">Publisher</dt>
     <dd class="col-sm-10">@Html.DisplayFor(model => model.Book.Publisher!.PublisherName)</dd>
+
+    <dt class="col-sm-2">BookCategories</dt>
+    <dd class="col-sm-10">
+        @if (Model.Book.BookCategories != null)
+        {
+            foreach (var category in Model.Book.BookCategories)
+            {
+                <div>
+                    @category.CategoryID @category.Category.CategoryName
+                </div>
+            }
+        }
+    </dd>
+
 </dl>
 <a asp-page="./Edit" asp-route-id="@Model.Book.ID">Edit</a> |
 <a asp-page="./Index">Back to List</a>

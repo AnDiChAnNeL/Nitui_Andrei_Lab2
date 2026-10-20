@@ -1,4 +1,4 @@
-@page
+@page "/"
 @model Nitui_Andrei_Lab2.Pages.Books.IndexModel
 @{ ViewData["Title"] = "Index"; }
 <h1>Index</h1>
@@ -18,11 +18,16 @@
             <th>@Html.DisplayNameFor(model => model.Book[0].Price)</th>
             <th>@Html.DisplayNameFor(model => model.Book[0].PublishingDate)</th>
             <th>Publisher</th>
+
+            <th>BookCategories</th>
+
             <th></th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model.Book)
+
+        @foreach (var item in Model.BookD.Books)
+
     {
         <tr>
             <td>@Html.DisplayFor(modelItem => item.Title)</td>
@@ -30,6 +35,19 @@
             <td>@Html.DisplayFor(modelItem => item.Price)</td>
             <td>@Html.DisplayFor(modelItem => item.PublishingDate)</td>
             <td>@Html.DisplayFor(modelItem => item.Publisher!.PublisherName)</td>
+
+                <td>
+                    @if (item.BookCategories != null)
+                    {
+                        foreach (var category in item.BookCategories)
+                        {
+                            <div>
+                                @category.CategoryID @category.Category.CategoryName
+                            </div>
+                        }
+                    }
+                </td>
+
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
                 <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |

@@ -16,8 +16,14 @@ public class DetailsModel : PageModel
     public async Task<IActionResult> OnGetAsync(int? id)
     {
         if (id == null) return NotFound();
-        var book = await _context.Book.Include(b => b.Author).Include(b => b.Publisher)
+
+        var book = await _context.Book
+            .Include(b => b.Author)
+            .Include(b => b.Publisher)
+            .Include(b => b.BookCategories)
+                .ThenInclude(bc => bc.Category)
             .FirstOrDefaultAsync(b => b.ID == id);
+
         if (book == null) return NotFound();
         Book = book;
         return Page();

@@ -5,6 +5,7 @@ namespace Nitui_Andrei_Lab2.Data
 {
     public class Nitui_Andrei_Lab2Context : DbContext
     {
+        public DbSet<Nitui_Andrei_Lab2.Models.Category> Category { get; set; } = default!;
         public Nitui_Andrei_Lab2Context(DbContextOptions<Nitui_Andrei_Lab2Context> options) : base(options) { }
 
         public DbSet<Book> Book { get; set; } = default!;
