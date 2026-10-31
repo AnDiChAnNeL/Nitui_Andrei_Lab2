@@ -2,16 +2,40 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Nitui_Andrei_Lab2.Data;
 using Nitui_Andrei_Lab2.Models;
+using Nitui_Andrei_Lab2.ViewModels;
 
 namespace Nitui_Andrei_Lab2.Pages.Publishers;
 
 public class IndexModel : PageModel
 {
     private readonly Nitui_Andrei_Lab2Context _context;
-    public IndexModel(Nitui_Andrei_Lab2Context context) { _context = context; }
-    public IList<Publisher> Publishers { get; set; } = default!;
-    public async Task OnGetAsync()
+
+    public IndexModel(Nitui_Andrei_Lab2Context context)
     {
-        Publishers = await _context.Publisher.ToListAsync();
+        _context = context;
+    }
+
+    public IList<Publisher> Publisher { get; set; } = default!;
+
+    public PublisherIndexData PublisherData { get; set; } = default!;
+    public int PublisherID { get; set; }
+    public int BookID { get; set; }
+
+    public async Task OnGetAsync(int? id, int? bookID)
+    {
+        PublisherData = new PublisherIndexData();
+        PublisherData.Publishers = await _context.Publisher
+            .Include(i => i.Books)
+                .ThenInclude(c => c.Author)
+            .OrderBy(i => i.PublisherName)
+            .ToListAsync();
+
+        if (id != null)
+        {
+            PublisherID = id.Value;
+            Publisher publisher = PublisherData.Publishers
+                .Where(i => i.ID == id.Value).Single();
+            PublisherData.Books = publisher.Books;
+        }
     }
 }
