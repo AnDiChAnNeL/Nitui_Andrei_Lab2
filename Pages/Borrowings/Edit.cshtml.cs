@@ -1,71 +1,111 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Nitui_Andrei_Lab2.Models;
 using Nitui_Andrei_Lab2.Data;
+using Nitui_Andrei_Lab2.Models;
 
-namespace Nitui_Andrei_Lab2.Pages.Borrowings;
-
-public class EditModel : PageModel
+namespace Nitui_Andrei_Lab2.Pages.Borrowings
 {
-    private readonly Nitui_Andrei_Lab2Context _context;
-
-    public EditModel(Nitui_Andrei_Lab2Context context)
+    public class EditModel : PageModel
     {
-        _context = context;
-    }
+        private readonly Nitui_Andrei_Lab2Context _context;
 
-    [BindProperty]
-    public Borrowing Borrowing { get; set; } = default!;
-
-    public async Task<IActionResult> OnGetAsync(int? id)
-    {
-        if (id is null)
+        public EditModel(Nitui_Andrei_Lab2Context context)
         {
-            return NotFound();
+            _context = context;
         }
 
-        var borrowing = await _context.Borrowing.FirstOrDefaultAsync(m => m.ID == id);
-        if (borrowing is null)
-        {
-            return NotFound();
-        }
-        Borrowing = borrowing;
-        return Page();
-    }
+        [BindProperty]
+        public Borrowing Borrowing { get; set; } = default!;
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see https://aka.ms/RazorPagesCRUD.
-    public async Task<IActionResult> OnPostAsync()
-    {
-        if (!ModelState.IsValid)
+        public async Task<IActionResult> OnGetAsync(int? id)
         {
-            return Page();
-        }
-
-        _context.Attach(Borrowing).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!BorrowingExists(Borrowing.ID))
+            if (id == null)
             {
                 return NotFound();
             }
-            else
+
+            var borrowing = await _context.Borrowing
+                .FirstOrDefaultAsync(b => b.ID == id);
+
+            if (borrowing == null)
             {
-                throw;
+                return NotFound();
             }
+
+            Borrowing = borrowing;
+
+            LoadSelectLists();
+
+            return Page();
         }
 
-        return RedirectToPage("./Index");
-    }
+        private void LoadSelectLists()
+        {
+            var bookList = _context.Book
+                .Include(b => b.Author)
+                .Select(x => new
+                {
+                    x.ID,
+                    BookFullName = x.Title + " - " +
+                        (x.Author != null
+                            ? x.Author.LastName + " " +
+                              x.Author.FirstName
+                            : "")
+                })
+                .ToList();
 
-    private bool BorrowingExists(int id)
-    {
-        return _context.Borrowing.Any(e => e.ID == id);
+            ViewData["BookID"] = new SelectList(
+                bookList,
+                "ID",
+                "BookFullName",
+                Borrowing.BookID
+            );
+
+            var memberList = _context.Member
+                .ToList()
+                .Select(m => new
+                {
+                    m.ID,
+                    MemberFullName =
+                        string.IsNullOrWhiteSpace(m.FullName)
+                            ? m.Email
+                            : m.FullName
+                });
+
+            ViewData["MemberID"] = new SelectList(
+                memberList,
+                "ID",
+                "MemberFullName",
+                Borrowing.MemberID
+            );
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                LoadSelectLists();
+                return Page();
+            }
+
+            var borrowing = await _context.Borrowing
+                .FindAsync(Borrowing.ID);
+
+            if (borrowing == null)
+            {
+                return NotFound();
+            }
+
+            borrowing.MemberID = Borrowing.MemberID;
+            borrowing.BookID = Borrowing.BookID;
+            borrowing.ReturnDate = Borrowing.ReturnDate;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
     }
 }
