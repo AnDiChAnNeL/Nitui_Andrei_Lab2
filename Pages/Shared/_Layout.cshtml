@@ -11,7 +11,10 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-page="/Books/Index">Books</a>
+
+                <a class="navbar-brand" asp-page="/Books/Index">
+                    Books
+                </a>
 
                 <div class="navbar-nav">
                     <a class="nav-link" asp-page="/Books/Index">Home</a>
@@ -22,6 +25,11 @@
                     <a class="nav-link" asp-page="/Members/Index">Members</a>
                     <a class="nav-link" asp-page="/Borrowings/Index">Borrowings</a>
                 </div>
+
+                <div class="navbar-nav ms-auto">
+                    <partial name="_LoginPartial" />
+                </div>
+
             </div>
         </nav>
     </header>
