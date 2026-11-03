@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,27 +12,26 @@
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-page="/Books/Index">Books</a>
+
                 <div class="navbar-nav">
-
                     <a class="nav-link" asp-page="/Books/Index">Home</a>
-
                     <a class="nav-link" asp-page="/Books/Index">Books</a>
                     <a class="nav-link" asp-page="/Publishers/Index">Publishers</a>
                     <a class="nav-link" asp-page="/Authors/Index">Authors</a>
-
-                    <li class="nav-item">
-
-                        <a class="nav-link" asp-page="/CategoryPages/Index">Categories</a>
-
-                    </li>
-
+                    <a class="nav-link" asp-page="/CategoryPages/Index">Categories</a>
+                    <a class="nav-link" asp-page="/Members/Index">Members</a>
+                    <a class="nav-link" asp-page="/Borrowings/Index">Borrowings</a>
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
-        <main role="main" class="pb-3">@RenderBody()</main>
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
     </div>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

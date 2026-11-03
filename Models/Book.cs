@@ -25,5 +25,6 @@ namespace Nitui_Andrei_Lab2.Models
 
         public ICollection<BookCategory>? BookCategories { get; set; }
 
+        public ICollection<Borrowing>? Borrowings { get; set; }
     }
 }
