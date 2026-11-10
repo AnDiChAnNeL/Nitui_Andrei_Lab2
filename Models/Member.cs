@@ -1,31 +1,40 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Nitui_Andrei_Lab2.Models
+namespace Nitui_Andrei_Lab2.Models;
+
+public class Member
 {
-    public class Member
+    public int ID { get; set; }
+
+    [RegularExpression(@"^[A-ZĂÂÎȘȚ][a-zA-ZăâîșțĂÂÎȘȚ -]*$",
+        ErrorMessage = "Prenumele trebuie să înceapă cu majusculă, de exemplu Ana sau Ana-Maria.")]
+    [StringLength(30, MinimumLength = 3,
+        ErrorMessage = "Prenumele trebuie să aibă între 3 și 30 de caractere.")]
+    public string? FirstName { get; set; }
+
+    [RegularExpression(@"^[A-ZĂÂÎȘȚ]+[a-zăâîșț ]*$",
+        ErrorMessage = "Numele trebuie să înceapă cu majusculă, de exemplu Popescu.")]
+    [StringLength(30, MinimumLength = 3,
+        ErrorMessage = "Numele trebuie să aibă între 3 și 30 de caractere.")]
+    public string? LastName { get; set; }
+
+    [StringLength(70, ErrorMessage = "Adresa poate avea cel mult 70 de caractere.")]
+    public string? Adress { get; set; }
+
+    public string Email { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(?:0[0-9]{3}|\(0[0-9]{3}\))[-. ]?[0-9]{3}[-. ]?[0-9]{3}$",
+        ErrorMessage = "Telefonul trebuie să înceapă cu 0, de exemplu 0722-123-123, 0722.123.123 sau 0722 123 123.")]
+    public string? Phone { get; set; }
+
+    [Display(Name = "Full Name")]
+    public string? FullName
     {
-        public int ID { get; set; }
-
-        public string? FirstName { get; set; }
-
-        public string? LastName { get; set; }
-
-        public string? Adress { get; set; }
-
-        public string Email { get; set; } = string.Empty;
-
-        public string? Phone { get; set; }
-
-        [Display(Name = "Full Name")]
-        public string? FullName
+        get
         {
-            get
-            {
-                return FirstName + " " + LastName;
-            }
+            return FirstName + " " + LastName;
         }
-
-        public ICollection<Borrowing>? Borrowings { get; set; }
     }
+
+    public ICollection<Borrowing>? Borrowings { get; set; }
 }

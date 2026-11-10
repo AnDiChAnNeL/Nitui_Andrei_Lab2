@@ -1,20 +1,14 @@
-
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Nitui_Andrei_Lab2.Data;
 using Nitui_Andrei_Lab2.Models;
 
@@ -28,8 +22,8 @@ public class RegisterModel : PageModel
     private readonly IUserEmailStore<ApplicationUser> _emailStore;
     private readonly ILogger<RegisterModel> _logger;
     private readonly IEmailSender _emailSender;
-
     private readonly Nitui_Andrei_Lab2Context _context;
+    private readonly LibraryIdentityContext _identityContext;
 
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
@@ -37,7 +31,8 @@ public class RegisterModel : PageModel
         SignInManager<ApplicationUser> signInManager,
         ILogger<RegisterModel> logger,
         IEmailSender emailSender,
-        Nitui_Andrei_Lab2Context context)
+        Nitui_Andrei_Lab2Context context,
+        LibraryIdentityContext identityContext)
     {
         _userManager = userManager;
         _userStore = userStore;
@@ -46,6 +41,7 @@ public class RegisterModel : PageModel
         _logger = logger;
         _emailSender = emailSender;
         _context = context;
+        _identityContext = identityContext;
     }
 
     [BindProperty]
@@ -100,29 +96,17 @@ public class RegisterModel : PageModel
 
             await _userStore.SetUserNameAsync(
                 user, Input.Email, CancellationToken.None);
-
             await _emailStore.SetEmailAsync(
                 user, Input.Email, CancellationToken.None);
 
-            var result = await _userManager.CreateAsync(
-                user, Input.Password);
+            var result = await CreateMemberAccountAsync(user);
 
             if (result.Succeeded)
             {
-                // Adaugam automat utilizatorul in tabelul Member
-                var member = new Member
-                {
-                    Email = Input.Email
-                };
-
-                _context.Member.Add(member);
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation(
                     "User created a new account with password.");
 
                 var userId = await _userManager.GetUserIdAsync(user);
-
                 var code = await
                     _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -156,23 +140,47 @@ public class RegisterModel : PageModel
                             returnUrl = returnUrl
                         });
                 }
-                else
-                {
-                    await _signInManager.SignInAsync(
-                        user, isPersistent: false);
 
-                    return LocalRedirect(returnUrl);
-                }
+                await _signInManager.SignInAsync(
+                    user, isPersistent: false);
+                return LocalRedirect(returnUrl);
             }
 
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(
-                    string.Empty, error.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
         }
 
         return Page();
+    }
+
+    private async Task<IdentityResult> CreateMemberAccountAsync(ApplicationUser user)
+    {
+        await using var transaction =
+            await _identityContext.Database.BeginTransactionAsync();
+
+        _context.Database.SetDbConnection(_identityContext.Database.GetDbConnection());
+        await using var memberTransaction =
+            await _context.Database.UseTransactionAsync(transaction.GetDbTransaction());
+
+        var result = await _userManager.CreateAsync(user, Input.Password);
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        result = await _userManager.AddToRoleAsync(user, "User");
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        _context.Member.Add(new Member { Email = Input.Email });
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return result;
     }
 
     private ApplicationUser CreateUser()
@@ -185,8 +193,7 @@ public class RegisterModel : PageModel
         {
             throw new InvalidOperationException(
                 $"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class " +
-                "and has a parameterless constructor.");
+                "Ensure that it is not an abstract class and has a parameterless constructor.");
         }
     }
 

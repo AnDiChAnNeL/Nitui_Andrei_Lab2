@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Nitui_Andrei_Lab2.Models;
 using Nitui_Andrei_Lab2.Data;
+using Nitui_Andrei_Lab2.Models;
 
 namespace Nitui_Andrei_Lab2.Pages.Members;
 
@@ -15,7 +15,6 @@ public class EditModel : PageModel
         _context = context;
     }
 
-    [BindProperty]
     public Member Member { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(int? id)
@@ -30,35 +29,44 @@ public class EditModel : PageModel
         {
             return NotFound();
         }
+
         Member = member;
         return Page();
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see https://aka.ms/RazorPagesCRUD.
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync([FromForm(Name = "Member.ID")] int? id)
     {
-        if (!ModelState.IsValid)
+        if (id is null)
+        {
+            return NotFound();
+        }
+
+        var member = await _context.Member.FindAsync(id.Value);
+        if (member is null)
+        {
+            return NotFound();
+        }
+
+        Member = member;
+
+        if (!await TryUpdateModelAsync(
+            Member,
+            "Member",
+            m => m.FirstName,
+            m => m.LastName,
+            m => m.Adress,
+            m => m.Phone))
         {
             return Page();
         }
-
-        _context.Attach(Member).State = EntityState.Modified;
 
         try
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException) when (!MemberExists(Member.ID))
         {
-            if (!MemberExists(Member.ID))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
+            return NotFound();
         }
 
         return RedirectToPage("./Index");
@@ -66,6 +74,6 @@ public class EditModel : PageModel
 
     private bool MemberExists(int id)
     {
-        return _context.Member.Any(e => e.ID == id);
+        return _context.Member.Any(member => member.ID == id);
     }
 }
